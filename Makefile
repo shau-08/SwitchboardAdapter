@@ -15,7 +15,8 @@ rtl:check-firtool ## Generates Verilog code from Chisel sources (output to ./gen
 
 lazyrtl:check-firtool ## Generates Verilog code from Chisel sources (output to ./generated_sv_dir)
 	$(MILL) $(project).runMain $(project).lazyrtlMain $(TARGET)
-
+rtl-dispatch:
+	$(MAKE) $(RTL_TARGET) TARGET=$(TARGET)
 check: test
 .PHONY: test
 test:check-firtool ## Run Chisel tests
