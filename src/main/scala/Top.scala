@@ -5,7 +5,7 @@ package switchboard
 import org.chipsalliance.cde.config.Parameters
 import org.chipsalliance.diplomacy.lazymodule.LazyModule
 
-/** To run from a terminal shell
+/** To run from a terminal shell.
   * {{{
   * mill explorerTL.runMain explorerTL.explorerTLMain
   * }}}
