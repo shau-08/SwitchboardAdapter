@@ -1,7 +1,8 @@
 project = switchboard
+RTL_TARGET ?= "lazyrtl"
 
 TARGET ?= "Loopback"
-
+-include cd.config
 # Toolchains and tools
 MILL = ./../playground/mill
 
