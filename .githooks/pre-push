@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+if [ -f ./mill ]; then
+  MILL_BIN=./mill
+else
+  MILL_BIN=playground/mill
+fi
+
+# Auto-detect this repo's top-level Mill project name from its own
+# build.sc (same convention used in CI): the repo's own root module is
+# the one object whose millSourcePath is exactly `os.pwd` -- every
+# dependency module instead appends path segments after it.
+PROJECT=$(awk '
+  /^object[ \t]+[A-Za-z_][A-Za-z0-9_]*/ { name=$2 }
+  /millSourcePath[ \t]*=[ \t]*os\.pwd[ \t]*$/ { print name; exit }
+' build.sc)
+
+if [ -z "$PROJECT" ]; then
+  echo "ERROR: could not auto-detect top-level Mill project from build.sc" >&2
+  echo "(expected exactly one object with millSourcePath = os.pwd)" >&2
+  exit 1
+fi
+
+echo "Running lint check before push (project=$PROJECT)..."
+make -f playground/Makefile.include lint project="$PROJECT" MILL="$MILL_BIN"
+
+if ! git diff --exit-code --quiet; then
+  echo ""
+  echo "Push aborted: lint reformatted one or more files."
+  echo "   Review the changes below, then commit them and push again."
+  echo ""
+  git diff --stat
+  exit 1
+fi
+
+echo "Lint check passed -- nothing needed reformatting. Proceeding with push."

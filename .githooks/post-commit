@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ -f ./mill ]; then
+  MILL_BIN=./mill
+else
+  MILL_BIN=playground/mill
+fi
+
+# Same auto-detection convention as pre-push and CI.
+PROJECT=$(awk '
+  /^object[ \t]+[A-Za-z_][A-Za-z0-9_]*/ { name=$2 }
+  /millSourcePath[ \t]*=[ \t]*os\.pwd[ \t]*$/ { print name; exit }
+' build.sc)
+
+if [ -z "$PROJECT" ]; then
+  echo "Warning: could not auto-detect Mill project from build.sc — skipping lint check."
+  exit 0
+fi
+
+make -f playground/Makefile.include lint project="$PROJECT" MILL="$MILL_BIN" || true
+
+if ! git diff --exit-code --quiet; then
+  echo "Lint reformatted files after your last commit. Review, commit the changes, and push again -- the push will be blocked otherwise."
+fi

@@ -1,0 +1,11 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  ci:
+    uses: shau-08/CICD/.github/workflows/reusable-ci.yml@main
+    secrets: inherit

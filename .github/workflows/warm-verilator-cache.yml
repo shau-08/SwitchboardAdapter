@@ -1,0 +1,30 @@
+name: Warm Verilator Cache
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # weekly, in case the cache ever gets evicted
+
+jobs:
+  warm-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache verilator build
+        uses: actions/cache@v4
+        id: verilator-cache
+        with:
+          path: /opt/verilator-5.012
+          key: verilator-5.012-${{ runner.os }}
+
+      - name: Build verilator (only runs on cache miss)
+        if: steps.verilator-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y git help2man perl python3 make autoconf g++ flex bison \
+            libfl2 libfl-dev zlib1g zlib1g-dev
+          git clone --depth 1 --branch v5.012 https://github.com/verilator/verilator.git /tmp/verilator-src
+          cd /tmp/verilator-src
+          autoconf
+          ./configure --prefix=/opt/verilator-5.012
+          make -j"$(nproc)"
+          sudo make install
